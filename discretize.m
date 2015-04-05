@@ -8,14 +8,14 @@ function [ x ] = discretize( x )
     % empirical mean and standard deviation of x
     %   mean = sum(x) / length(x);
     %   std = sqrt( sum((x - mean) .^ 2) / length(x) )
-    x_mean = mean(x);
-    x_std = std(x, 1);
+    NaN_x = isnan(x);
+    x_mean = nanmean(x);
+    x_std = nanstd(x);
     
     H = x > x_mean+x_std;
     L = x < x_mean-x_std;
     
     x(H) = 'H'; 
     x(L) = 'L';
-    x(~H & ~L) = 'M';
+    x(~H & ~L & ~NaN_x) = 'M';
 end
-
