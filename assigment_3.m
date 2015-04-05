@@ -1,5 +1,6 @@
-%%
+%% Setup
 clc; clear;
+set_laplace_k(1);
 
 %% Load the data and discretize
 dataset = load('1001-b-clean.csv');
