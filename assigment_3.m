@@ -12,5 +12,12 @@ Xb = discretize(dataset(:, 1));
 Xh = discretize(dataset(:, 2));
 Xt = discretize(dataset(:, 3));
 
+test_dataset = load('1004-b-clean.csv');
+Pd_test = test_dataset(:, 5);
+Xb_test = discretize(test_dataset(:, 1));
+Xh_test = discretize(test_dataset(:, 2));
+Xt_test = discretize(test_dataset(:, 3));
+observation = [Xb_test Xh_test Xt_test];
+
 %% BN 1
 BN1
