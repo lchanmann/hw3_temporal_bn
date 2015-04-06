@@ -1,3 +1,11 @@
+%% Run EM algorithm
+domain = ['H' 'M' 'L'];
+P_Xb_given_Pd = [theta_0(domain); theta_0(domain)];
+while 1
+    P_Xb_given_Pd_1 = EM(Xb, Pd, P_Xb_given_Pd);
+    
+end
+
 %% Learn parameters of the CPDs
 P_Pd = Pr(Pd, [1 0]');
 P_Xb_given_Pd = BN1.CPT(Xb, Pd);
