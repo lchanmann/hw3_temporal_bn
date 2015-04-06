@@ -1,3 +1,14 @@
+% Bayesian Networks No.1
+%%
+clc;
+display('_______________________________________________________');
+display('                                                       ');
+display('                Programming Assignment #3              ');
+display('_______________________________________________________');
+display('                                                       ');
+display('                 Bayesian Networks No.1                ');
+display('_______________________________________________________');
+display(' ');
 %% Run EM algorithm and learn CPDs
 domain = ['H' 'M' 'L'];
 P_Pd = Pr(Pd_train, [1 0]');
@@ -30,7 +41,6 @@ display(' ');
 display('--------------------- Confusion matrix (Test) ---------------------');
 display(C);
 display(accuracy);
-
 
 display('Press Enter to continue ... ');
 pause;
