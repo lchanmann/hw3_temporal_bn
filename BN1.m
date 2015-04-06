@@ -1,16 +1,9 @@
-%% Run EM algorithm
+%% Run EM algorithm and learn CPDs
 domain = ['H' 'M' 'L'];
-P_Xb_given_Pd = [theta_0(domain); theta_0(domain)];
-% P_Xh_given_Pd = [theta_0(domain); theta_0(domain)];
-% P_Xt_given_Pd = [theta_0(domain); theta_0(domain)];
-
-P_Xh_given_Pd = EM(Xb, Pd, P_Xb_given_Pd);
-
-%% Learn parameters of the CPDs
-P_Pd = Pr(Pd, [1 0]');
-P_Xb_given_Pd = BN1.CPT(Xb, Pd);
-P_Xh_given_Pd = BN1.CPT(Xh, Pd);
-P_Xt_given_Pd = BN1.CPT(Xt, Pd);
+P_Pd = Pr(Pd_train, [1 0]');
+P_Xb_given_Pd = EM(Xb_train, Pd_train, [theta_0(domain); theta_0(domain)]);
+P_Xh_given_Pd = EM(Xh_train, Pd_train, [theta_0(domain); theta_0(domain)]);
+P_Xt_given_Pd = EM(Xt_train, Pd_train, [theta_0(domain); theta_0(domain)]);
 
 display('--------------------- Parameters learned ---------------------');
 display(P_Pd);
@@ -18,26 +11,26 @@ display(P_Xb_given_Pd);
 display(P_Xh_given_Pd);
 display(P_Xt_given_Pd);
 
-%% Confusion matrix
-data_size = size(test_dataset, 1);
-prediction = zeros(data_size, 1);
-
-% prediction
-model = BN1.model(P_Pd, P_Xb_given_Pd, P_Xh_given_Pd, P_Xt_given_Pd);
-for i = 1:data_size
-    prediction(i, 1) = model.predict(1, observation(i, :));
-end
-% normalize the prediction 
-%   the person drink (Pd = 1) if prediction > 0.5,
-%   otherwise, the person doesn't drink (Pd = 0)
-predicted_Pd = prediction > 0.5;
-C = confusion(Pd_test, predicted_Pd);
-% accuracy rate = sum of diagonal / sum of all
-accuracy = sum(diag(C)) / sum(sum(C));
+%% Confusion matrix (Train)
+observation = [Xb_train Xh_train Xt_train];
+Pd = Pd_train;
+BN1.compute_confusion_and_accuracy;
 
 display(' ');
-display('--------------------- Confusion matrix ---------------------');
+display('--------------------- Confusion matrix (Train) ---------------------');
 display(C);
 display(accuracy);
+
+%% Confusion matrix (Test)
+observation = [Xb_test Xh_test Xt_test];
+Pd = Pd_test;
+BN1.compute_confusion_and_accuracy;
+
+display(' ');
+display('--------------------- Confusion matrix (Test) ---------------------');
+display(C);
+display(accuracy);
+
+
 display('Press Enter to continue ... ');
 pause;
