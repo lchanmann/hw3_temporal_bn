@@ -16,7 +16,7 @@ P_Xb_given_Pd = EM(Xb_train, Pd_train, [theta_0(domain); theta_0(domain)]);
 P_Xh_given_Pd = EM(Xh_train, Pd_train, [theta_0(domain); theta_0(domain)]);
 P_Xt_given_Pd = EM(Xt_train, Pd_train, [theta_0(domain); theta_0(domain)]);
 
-display('--------------------- Parameters learned ---------------------');
+display('________________ Parameters learned ___________________');
 display(P_Pd);
 display(P_Xb_given_Pd);
 display(P_Xh_given_Pd);
@@ -28,7 +28,7 @@ Pd = Pd_train;
 BN1.compute_confusion_and_accuracy;
 
 display(' ');
-display('--------------------- Confusion matrix (Train) ---------------------');
+display('_____________ Confusion matrix (Train) _________________');
 display(C);
 display(accuracy);
 
@@ -38,7 +38,7 @@ Pd = Pd_test;
 BN1.compute_confusion_and_accuracy;
 
 display(' ');
-display('--------------------- Confusion matrix (Test) ---------------------');
+display('_____________ Confusion matrix (Test) ___________________');
 display(C);
 display(accuracy);
 
