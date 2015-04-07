@@ -1,6 +1,6 @@
 function [ cpt ] = CPT ( Pd , prev_Pd )
-% The Pd is the Pd_prime...
-% The prev_Pd is the Pd..
+% The Pd is the Pd_prime.
+% The 
 % BN1.CPT - construct CPT to predict Pd (at a time t) given the previous Pd
 % (at time t-1)
 %   learn CPT parameters using Maximum Likelihood estimator
