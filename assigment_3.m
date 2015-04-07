@@ -21,9 +21,12 @@ Xb_train = discretize(train_dataset(:, 1));
 Xh_train = discretize(train_dataset(:, 2));
 Xt_train = discretize(train_dataset(:, 3));
 
-Xb_prime_train = discretize(train_dataset(:, 1));
-Xh_prime_train = discretize(train_dataset(:, 2));
-Xt_prime_train = discretize(train_dataset(:, 3));
+Pd_prime_train = Pd_train(2:end);
+Xb_prime_train = Xb_train(2:end);
+Xh_prime_train = Xh_train(2:end);
+Xt_prime_train = Xt_train(2:end);
+
+
 
 %% Testing...
 test_dataset = load('1004-b-clean.csv');
