@@ -1,7 +1,7 @@
-function [ theta ] = EM( x, y, Pd, cpt, x_domain, y_domain, pd_domain  )
+function [ theta ] = EM3D( x, y, Pd, cpt, x_domain, y_domain, pd_domain  )
 % EM - Expectation Maximization algorithm for a variable depending on
-%      two other variables.
-% inputs
+%      two other variables, resulting in a 3D table.
+
     if nargin<7 %assume Xa
         pd_domain = [1 2 3];
     end
