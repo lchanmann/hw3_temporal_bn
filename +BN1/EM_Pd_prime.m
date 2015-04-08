@@ -27,7 +27,7 @@ function [theta] = em_step( Pd, Pd_prime, Xb, Xt, Xh, Xb_prime, Xt_prime, Xh_pri
         pd_is_k = (Pd_prime == pd_domain(k));
         pd_count = sum(pd_is_k);
         for l=1:column
-            expected_sum = prob_pd_prime(Pd == domain(l) & pd_is_k, cpt(k, l) * sum(isnan(Pd) & pd_is_k), Xb, Xt, Xh, Xb_prime, Xt_prime, Xh_prime);
+            expected_sum = prob_pd_prime(Pd == domain(l), pd_is_k, cpt(k, l),isnan(Pd), pd_is_k);
             theta(k, l) = expected_sum / pd_count;
         end
     end
