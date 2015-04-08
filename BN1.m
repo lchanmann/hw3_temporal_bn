@@ -37,7 +37,7 @@ display(C);
 display(accuracy);
 
 %% Confusion matrix (Test)
-observation = [Xb_test Xh_test Xt_test];
+observation = [Pd_test Xb_prime_test Xh_prime_test Xt_prime_test];
 Pd = Pd_test;
 BN1.compute_confusion_and_accuracy;
 

@@ -4,9 +4,10 @@ classdef model
     
     properties
         P_Pd;
-        P_Xb_given_Pd;
-        P_Xh_given_Pd;
-        P_Xt_given_Pd;
+        P_Pd_prime_given_Pd;
+        P_Xb_prime_given_Pd_prime;
+        P_Xh_prime_given_Pd_prime;
+        P_Xt_prime_given_Pd_prime;
     end
     
     methods
@@ -14,34 +15,31 @@ classdef model
         % Initializer
         %
         function obj = model( ...
-            P_Pd, P_Xb_given_Pd, P_Xh_given_Pd, P_Xt_given_Pd)
+            P_Pd, P_Pd_prime_given_Pd,...
+            P_Xb_prime_given_Pd_prime, P_Xh_prime_given_Pd_prime, P_Xt_prime_given_Pd_prime)
         
-            obj.P_Pd = P_Pd;
+            obj.P_Pd = [P_Pd 1];
+            obj.P_Pd_prime_given_Pd = [P_Pd_prime_given_Pd ones(2,1)];
             % Add total of probability as the last column
-            obj.P_Xb_given_Pd = [P_Xb_given_Pd ones(2,1)];
-            obj.P_Xh_given_Pd = [P_Xh_given_Pd ones(2,1)];
-            obj.P_Xt_given_Pd = [P_Xt_given_Pd ones(2,1)];
+            obj.P_Xb_prime_given_Pd_prime = [P_Xb_prime_given_Pd_prime ones(2,1)];
+            obj.P_Xh_prime_given_Pd_prime = [P_Xh_prime_given_Pd_prime ones(2,1)];
+            obj.P_Xt_prime_given_Pd_prime = [P_Xt_prime_given_Pd_prime ones(2,1)];
         end
         
         %
-        % Compute P(pd|e)
+        % Compute P(pd'|e)
         %
-        function P = predict(obj, pd, e)
-            p_pd_is_1 = obj.p_pd(1);
-            p_xb_given_pd_is_1 = obj.p_x_given_pd(e(1), 1, obj.P_Xb_given_Pd);
-            p_xh_given_pd_is_1 = obj.p_x_given_pd(e(2), 1, obj.P_Xh_given_Pd);
-            p_xt_given_pd_is_1 = obj.p_x_given_pd(e(3), 1, obj.P_Xt_given_Pd);
-           
-            p_pd_is_0 = obj.p_pd(0);
-            p_xb_given_pd_is_0 = obj.p_x_given_pd(e(1), 0, obj.P_Xb_given_Pd);
-            p_xh_given_pd_is_0 = obj.p_x_given_pd(e(2), 0, obj.P_Xh_given_Pd);
-            p_xt_given_pd_is_0 = obj.p_x_given_pd(e(3), 0, obj.P_Xt_given_Pd);
+        function P = predict(obj, pd_prime, e)
+            p_pd = obj.p_pd( e(1) );
+            p_pd_prime_given_pd = obj.p_pd_prime_given_pd( e(1) );
+            p_xb_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xb_prime_given_Pd_prime, e(2) );
+            p_xh_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xh_prime_given_Pd_prime, e(3) );
+            p_xt_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xt_prime_given_Pd_prime, e(4) );
             
-            P_normalized = [ ...
-              p_pd_is_1 * p_xb_given_pd_is_1 * p_xh_given_pd_is_1 * p_xt_given_pd_is_1 ...
-              p_pd_is_0 * p_xb_given_pd_is_0 * p_xh_given_pd_is_0 * p_xt_given_pd_is_0
-            ];
-            P = P_normalized(obj.pd_row(pd)) / sum(P_normalized);
+            P_normalized = p_pd .* p_pd_prime_given_pd .* p_xb_prime_given_pd_prime ...
+                .* p_xh_prime_given_pd_prime .* p_xt_prime_given_pd_prime;
+            
+            P = P_normalized(obj.index(pd_prime, [1 0])) / sum(P_normalized);
         end
     end
     
@@ -50,42 +48,36 @@ classdef model
     %
     methods(Access = private)
         %
-        % Lookup P(x|pd) probability from CPT
+        % Get index from domain
         %
-        function P = p_x_given_pd(obj, x, pd, cpt)
-            P = cpt(obj.pd_row(pd), obj.x_column(x));
+        function ind = index(~, value, domain)
+            if isnan(value)
+                ind = length(domain) + 1;
+            else
+                ind = find(domain == value);
+            end
         end
         
         %
-        % Lookup P(pd) from CPT
+        % Lookup P(pd)
         %
         function P = p_pd(obj, pd)
-            P = obj.P_Pd(obj.pd_row(pd));
+            P = obj.P_Pd(obj.index(pd, [1 0]));
         end
         
         %
-        % Map Pd values {1 0} to row [1 2] in the CPT
+        % Lookup P(pd'|pd)
         %
-        function r = pd_row(~, pd)
-            pds = [1 0];
-            rows = [1 2];
-            
-            r = rows(pds == pd);
+        function P = p_pd_prime_given_pd(obj, pd)
+            domain = [1 0];
+            P = obj.P_Pd_prime_given_Pd(obj.index(pd, domain), 1:length(domain));
         end
         
         %
-        % Map the values {H, M, L , -} to column [1 2 3 4]
+        % Look P(x_'|pd')
         %
-        function c = x_column(~, x)
-            if isnan(x)
-                c = 4;
-                return
-            end
-            
-            xs = ['H' 'M' 'L'];
-            columns = [1 2 3];
-            
-            c = columns(xs == x);
+        function P = p_x_prime_given_pd_prime(obj, cpt, x)
+            P = cpt(:, obj.index(x, ['H' 'M' 'L']))';
         end
     end
 end
