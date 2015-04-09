@@ -27,7 +27,7 @@ display(P_Xh_prime_given_Pd_prime);
 display(P_Xt_prime_given_Pd_prime);
 
 %% Confusion matrix (Train)
-observation = [Pd_train Xb_prime_train Xh_prime_train Xt_prime_train];
+evidence = [Pd_train Xb_prime_train Xh_prime_train Xt_prime_train];
 Pd = Pd_train;
 BN1.compute_confusion_and_accuracy;
 
@@ -37,7 +37,7 @@ display(C);
 display(accuracy);
 
 %% Confusion matrix (Test)
-observation = [Pd_test Xb_prime_test Xh_prime_test Xt_prime_test];
+evidence = [Pd_test Xb_prime_test Xh_prime_test Xt_prime_test];
 Pd = Pd_test;
 BN1.compute_confusion_and_accuracy;
 
