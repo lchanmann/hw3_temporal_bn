@@ -9,9 +9,16 @@ display('                                                       ');
 display('                 Bayesian Networks No.2                ');
 display('_______________________________________________________');
 display(' ');
-%% Run EM algorithm and learn CPDs
-P_Pd = Pr(Pd_train, [1 0]');
-P_Xa = Pr(Xa_train, [1 2 3]');
+%% Fill in the best value and learn CPDs
+no_missing_Pd = fill_best( Pd_train );
+no_missing_Xa = fill_best( Xa_train );
+no_missing_Xb = fill_best_xi( Xb_train, no_missing_Pd, no_missing_Xa );
+no_missing_Xh = fill_best_xi( Xh_train, no_missing_Pd, no_missing_Xa );
+no_missing_Xt = fill_best_xi( Xt_train, no_missing_Pd, no_missing_Xa );
+
+P_Pd = Pr(no_missing_Pd, [1 0]');
+P_Xa = Pr(no_missing_Xa, [1 2 3]');
+P_Xa_given_Pd_and_Xa = BN2.CPT(no_missing_Xb, no_missing_Pd, no_missing_Xa);
 
 % P_Pd_prime = BN2.CPT(Pd_train(1:length(Pd_train)-1), Pd_train(2:length(Pd_train)), Xa_prime_train);
 P_Pd_prime_given_Pd = BN1.CPT(Pd_prime_train, Pd_train);
