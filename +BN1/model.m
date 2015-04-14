@@ -41,6 +41,102 @@ classdef model
             
             P = P_normalized(obj.index(pd_prime, [1 0])) / sum(P_normalized);
         end
+        
+        %
+        % pd_count
+        %
+        function count = pd_count(obj, pd)
+            if isnan(pd)
+                count = obj.P_Pd(1:2);
+            else
+                count = [1 0] == pd;
+            end
+        end
+        
+        %
+        % pd_prime_given_pd_count
+        %
+        function count = pd_prime_given_pd_count(obj, value)
+            nan_value = isnan(value);
+            
+            if sum(nan_value) == 0
+                domain = [1 1; 0 1; 1 0; 0 0];
+                count = obj.match_count(domain, value);
+            else
+                count = obj.P_Pd_prime_given_Pd(:, [1 2]);
+                if nan_value(1) == 0
+                    pd_prime = value(1);                    
+                    if pd_prime == 1
+                        % keep the first column
+                        count = count * [1 0; 0 0];
+                    else
+                        % keep the second column
+                        count = count * [0 0; 0 1];
+                    end
+                    count = count / sum(sum(count));
+                elseif nan_value(2) == 0
+                    pd = value(2);
+                    count = obj.count_given_pd(count, pd);
+                else
+                    count = count / sum(sum(count));
+                end
+            end
+        end
+        
+        %
+        % xb_given_pd_count
+        %
+        function count = xb_given_pd_count(obj, value)
+            count = obj.x_given_pd_count(value, obj.P_Xb_prime_given_Pd_prime(:, [1 2 3]));
+        end
+        
+        %
+        % xh_given_pd_count
+        %
+        function count = xh_given_pd_count(obj, value)
+            count = obj.x_given_pd_count(value, obj.P_Xh_prime_given_Pd_prime(:, [1 2 3]));
+        end
+        
+        %
+        % xt_given_pd_count
+        %
+        function count = xt_given_pd_count(obj, value)
+            count = obj.x_given_pd_count(value, obj.P_Xt_prime_given_Pd_prime(:, [1 2 3]));
+        end
+        
+        %
+        % x_given_pd_count
+        %
+        function count = x_given_pd_count(obj, value, cpt)
+            nan_value = isnan(value);
+            
+            if sum(nan_value) == 0
+                domain = ['H'+0 1; 'M'+0 1; 'L'+0 1
+                          'H'+0 0; 'M'+0 0; 'L'+0 0];
+                count = obj.match_count(domain, value);
+            else
+                count = cpt;
+                if nan_value(1) == 0 % Xi has value
+                    xb = value(1);
+                    if xb == 'H'
+                        % keep the first column
+                        count = count * [1 0 0; 0 0 0; 0 0 0];
+                    elseif xb == 'M'
+                        % keep the second column
+                        count = count * [0 0 0; 0 1 0; 0 0 0];
+                    else
+                        % keep the third column
+                        count = count * [0 0 0; 0 0 0; 0 0 1];
+                    end
+                    count = count / sum(sum(count));                    
+                elseif nan_value(2) == 0 % Pd has value
+                    pd = value(2);
+                    count = obj.count_given_pd(count, pd);
+                else
+                    count = count / sum(sum(count));
+                end
+            end
+        end
     end
     
     %
@@ -55,6 +151,29 @@ classdef model
                 ind = length(domain) + 1;
             else
                 ind = find(domain == value);
+            end
+        end
+        
+        %
+        % match_count
+        %
+        function count = match_count(obj, domain, value)
+            [r, ~] = size(domain);
+            test = domain == (ones(r, 1) * value);
+            match = sum(test, 2) == 2;
+            count = [match(1:(r/2))'; match((r/2+1):r)'];
+        end
+        
+        %
+        % count_given_pd
+        %
+        function count = count_given_pd(~, count, pd)
+            if pd == 1
+                % keep the first row
+                count = [1 0; 0 0] * count;
+            else
+                % keep the second row
+                count = [0 0; 0 1] * count;
             end
         end
         

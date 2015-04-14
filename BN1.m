@@ -13,11 +13,22 @@ display(' ');
 %% Run EM algorithm and learn CPDs
 initialize_cpt = @() [theta_0('HML'); theta_0('HML')];
 
-P_Pd = Pr(Pd_train, [1 0]');
-P_Pd_prime_given_Pd = BN1.CPT(Pd_prime_train, Pd_train);
-P_Xb_prime_given_Pd_prime = BN1.EM_Pd_prime(Xb_prime_train, Pd_prime_train, initialize_cpt());
-P_Xh_prime_given_Pd_prime = BN1.EM_Pd_prime(Xh_prime_train, Pd_prime_train, initialize_cpt());
-P_Xt_prime_given_Pd_prime = BN1.EM_Pd_prime(Xt_prime_train, Pd_prime_train, initialize_cpt());
+P_Pd = theta_0(1, [1 0]);
+P_Pd_prime_given_Pd = theta_0(2, [1 0]);
+P_Xb_prime_given_Pd_prime = theta_0(2, 'HML');
+P_Xh_prime_given_Pd_prime = theta_0(2, 'HML');
+P_Xt_prime_given_Pd_prime = theta_0(2, 'HML');
+
+% loop until converge
+[row, ~] = size(Pd_prime_train);
+BN1.E_step
+BN1.M_step
+
+% P_Pd = Pr(Pd_train, [1 0]');
+% P_Pd_prime_given_Pd = BN1.CPT(Pd_prime_train, Pd_train);
+% P_Xb_prime_given_Pd_prime = BN1.EM_Pd_prime(Xb_prime_train, Pd_prime_train, initialize_cpt());
+% P_Xh_prime_given_Pd_prime = BN1.EM_Pd_prime(Xh_prime_train, Pd_prime_train, initialize_cpt());
+% P_Xt_prime_given_Pd_prime = BN1.EM_Pd_prime(Xt_prime_train, Pd_prime_train, initialize_cpt());
 
 display('--------------------- Parameters learned ---------------------');
 display(P_Pd);
