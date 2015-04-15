@@ -42,7 +42,7 @@ function Pd_prime = predict( pd, xa, xb, xt, xh, ...
         jointP_Xt_prime = sum(sum(P_Xt_prime_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa_prime,2);
         Pd_prime=jointP_Xb_prime * jointP_Xh_prime * jointP_Xt_prime;
     
-    if isnan(Pd)
+    if isnan(pd)
         jointPd_rep = repmat(jointPd,1, length(jointP_Xa));
         jointP_Xb = sum(sum(P_Xb_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa,2);
         jointP_Xh = sum(sum(P_Xh_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa,2);
@@ -145,7 +145,7 @@ function P = lookup(cpt, x, x_domain, pd, pd_domain, xa, xa_domain)
     end
 end
 
-function ind = index(~, value, domain)
+function ind = index(value, domain)
 %finds the index of the given value in the domain, useful for tables
 %ordered following the order in the domain.
         ind = find(domain == value);

@@ -41,8 +41,17 @@ display(P_Pd_prime_given_Pd);
 display(P_Xa_prime_given_Pd_and_Xa);
 
 %% Confusion matrix (Train)
-observation = [Pd_train Xa_train Xb_prime_train Xa_prime_train Xh_prime_train Xt_prime_train];
 Pd = Pd_train;
+Xa = Xa_train;
+Xb = Xb_train;
+Xh = Xh_train;
+Xt = Xt_train;
+Pd_prime = Pd_prime_train;
+Xa_prime = Xa_prime_train;
+Xb_prime = Xb_prime_train;
+Xh_prime = Xh_prime_train;
+Xt_prime = Xt_prime_train;
+
 BN2.compute_confusion_and_accuracy;
 
 display(' ');
