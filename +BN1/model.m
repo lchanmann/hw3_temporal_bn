@@ -18,9 +18,9 @@ classdef model
             P_Pd, P_Pd_prime_given_Pd,...
             P_Xb_prime_given_Pd_prime, P_Xh_prime_given_Pd_prime, P_Xt_prime_given_Pd_prime)
         
+            % Add total of probability as the last column
             obj.P_Pd = [P_Pd 1];
             obj.P_Pd_prime_given_Pd = [P_Pd_prime_given_Pd ones(2,1)];
-            % Add total of probability as the last column
             obj.P_Xb_prime_given_Pd_prime = [P_Xb_prime_given_Pd_prime ones(2,1)];
             obj.P_Xh_prime_given_Pd_prime = [P_Xh_prime_given_Pd_prime ones(2,1)];
             obj.P_Xt_prime_given_Pd_prime = [P_Xt_prime_given_Pd_prime ones(2,1)];
@@ -29,17 +29,58 @@ classdef model
         %
         % Compute P(pd'|e)
         %
-        function P = predict(obj, pd_prime, e)
-            p_pd = obj.p_pd( e(1) );
-            p_pd_prime_given_pd = obj.p_pd_prime_given_pd( e(1) );
-            p_xb_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xb_prime_given_Pd_prime, e(2) );
-            p_xh_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xh_prime_given_Pd_prime, e(3) );
-            p_xt_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xt_prime_given_Pd_prime, e(4) );
+        function P = predict(obj, e)
+            pd = e(4);
+            if ~isnan(pd)
+                P = obj.p_pd_prime_given_pd( 1, pd );
+            else
+                p_e_given_pd_prime_is_1 = obj.p_e_given_pd_prime(e, 1);
+                p_e_given_pd_prime_is_0 = obj.p_e_given_pd_prime(e, 0);
+                
+                P = p_e_given_pd_prime_is_1 / (p_e_given_pd_prime_is_1 + p_e_given_pd_prime_is_0);
+            end
+        end
+        
+        %
+        % p_e_given_pd_prime
+        %
+        function P = p_e_given_pd_prime(obj, e, pd_prime)
+            p_xb_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xb_prime_given_Pd_prime, e(5), pd_prime );
+            p_xh_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xh_prime_given_Pd_prime, e(6), pd_prime );
+            p_xt_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xt_prime_given_Pd_prime, e(7), pd_prime );
             
-            P_normalized = p_pd .* p_pd_prime_given_pd .* p_xb_prime_given_pd_prime ...
-                .* p_xh_prime_given_pd_prime .* p_xt_prime_given_pd_prime;
+            p_xb_given_pd_is_1 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 1);
+            p_xb_given_pd_is_0 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 0);
             
-            P = P_normalized(obj.index(pd_prime, [1 0])) / sum(P_normalized);
+            P = p_xb_prime_given_pd_prime * p_xh_prime_given_pd_prime * p_xt_prime_given_pd_prime * ...
+                (p_xb_given_pd_is_1 + p_xb_given_pd_is_0);
+        end
+        
+        %
+        % p_x_bht_given_pd_prime_and_pd
+        %
+        function P = p_x_bht_given_pd_prime_and_pd(obj, e, pd_prime, pd)
+            p_xb_given_pd = obj.p_x_prime_given_pd_prime(obj.P_Xb_prime_given_Pd_prime, e(1), pd );
+            p_xh_given_pd = obj.p_x_prime_given_pd_prime(obj.P_Xh_prime_given_Pd_prime, e(2), pd );
+            p_xt_given_pd = obj.p_x_prime_given_pd_prime(obj.P_Xt_prime_given_Pd_prime, e(3), pd );
+            
+            p_pd_prime_given_pd = obj.p_pd_prime_given_pd(pd_prime, pd);
+            p_pd = obj.p_pd(pd);
+            
+            P = p_xb_given_pd * p_xh_given_pd * p_xt_given_pd * p_pd_prime_given_pd * p_pd;
+        end
+        
+        %
+        % count_given_pd
+        %
+        function count = count_given_pd(~, count, pd)
+            if pd == 1
+                % keep the first row
+                count = [1 0; 0 0] * count;
+            else
+                % keep the second row
+                count = [0 0; 0 1] * count;
+            end
         end
         
         %
@@ -103,6 +144,59 @@ classdef model
         function count = xt_given_pd_count(obj, value)
             count = obj.x_given_pd_count(value, obj.P_Xt_prime_given_Pd_prime(:, [1 2 3]));
         end
+    end
+    
+    %
+    % private functions
+    %
+    methods(Access = private)
+        %
+        % Get index from domain
+        %
+        function ind = index(~, value, domain)
+            if isnan(value)
+                ind = length(domain) + 1;
+            else
+                ind = find(domain == value);
+            end
+        end
+        
+        %
+        % Lookup P(pd)
+        %
+        function P = p_pd(obj, pd)
+            P = obj.P_Pd(obj.index(pd, [1 0]));
+        end
+        
+        %
+        % Lookup P(pd'|pd)
+        %
+        function P = p_pd_prime_given_pd(obj, pd_prime, pd)
+            row = obj.index(pd, [1 0]);
+            column = obj.index(pd_prime, [1 0]);
+            
+            P = obj.P_Pd_prime_given_Pd(row, column);
+        end
+        
+        %
+        % Look P(x_'|pd')
+        %
+        function P = p_x_prime_given_pd_prime(obj, cpt, x, pd_prime)
+            row = obj.index(pd_prime, [1 0]);
+            column = obj.index(x, 'HML'+0);
+            
+            P = cpt(row, column);
+        end
+        
+        %
+        % match_count
+        %
+        function count = match_count(~, domain, value)
+            [r, ~] = size(domain);
+            test = domain == (ones(r, 1) * value);
+            match = sum(test, 2) == 2;
+            count = [match(1:(r/2))'; match((r/2+1):r)'];
+        end
         
         %
         % x_given_pd_count
@@ -136,67 +230,6 @@ classdef model
                     count = count / sum(sum(count));
                 end
             end
-        end
-    end
-    
-    %
-    % private functions
-    %
-    methods(Access = private)
-        %
-        % Get index from domain
-        %
-        function ind = index(~, value, domain)
-            if isnan(value)
-                ind = length(domain) + 1;
-            else
-                ind = find(domain == value);
-            end
-        end
-        
-        %
-        % match_count
-        %
-        function count = match_count(~, domain, value)
-            [r, ~] = size(domain);
-            test = domain == (ones(r, 1) * value);
-            match = sum(test, 2) == 2;
-            count = [match(1:(r/2))'; match((r/2+1):r)'];
-        end
-        
-        %
-        % count_given_pd
-        %
-        function count = count_given_pd(~, count, pd)
-            if pd == 1
-                % keep the first row
-                count = [1 0; 0 0] * count;
-            else
-                % keep the second row
-                count = [0 0; 0 1] * count;
-            end
-        end
-        
-        %
-        % Lookup P(pd)
-        %
-        function P = p_pd(obj, pd)
-            P = obj.P_Pd(obj.index(pd, [1 0]));
-        end
-        
-        %
-        % Lookup P(pd'|pd)
-        %
-        function P = p_pd_prime_given_pd(obj, pd)
-            domain = [1 0];
-            P = obj.P_Pd_prime_given_Pd(obj.index(pd, domain), 1:length(domain));
-        end
-        
-        %
-        % Look P(x_'|pd')
-        %
-        function P = p_x_prime_given_pd_prime(obj, cpt, x)
-            P = cpt(:, obj.index(x, ['H' 'M' 'L']))';
         end
     end
 end
