@@ -11,7 +11,6 @@ display('_______________________________________________________');
 display(' ');
 
 %% Run EM algorithm and learn CPDs
-initialize_cpt = @() [theta_0('HML'); theta_0('HML')];
 
 P_Pd = theta_0(1, [1 0]);
 P_Pd_prime_given_Pd = theta_0(2, [1 0]);
