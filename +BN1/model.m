@@ -1,6 +1,6 @@
 classdef model
     % MODEL - BN1 prediction
-    %   Compute probability of 'Pd' given the evidences
+    %   Compute probability of 'Pd_prime' given the evidences
     
     properties
         P_Pd;
@@ -157,7 +157,7 @@ classdef model
         %
         % match_count
         %
-        function count = match_count(obj, domain, value)
+        function count = match_count(~, domain, value)
             [r, ~] = size(domain);
             test = domain == (ones(r, 1) * value);
             match = sum(test, 2) == 2;

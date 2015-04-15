@@ -35,6 +35,7 @@ Xb_prime_test = Xb_test(2:end);
 Xh_prime_test = Xh_test(2:end);
 Xt_prime_test = Xt_test(2:end);
 
+[row, ~] = size(Pd_prime_train);
 %% BN 1
 BN1
 

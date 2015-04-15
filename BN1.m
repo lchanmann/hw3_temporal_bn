@@ -19,11 +19,10 @@ P_Xb_prime_given_Pd_prime = theta_0(2, 'HML');
 P_Xh_prime_given_Pd_prime = theta_0(2, 'HML');
 P_Xt_prime_given_Pd_prime = theta_0(2, 'HML');
 
-% loop until converge
+% Loop until converge
 P_Pd_prime_given_Pd_temp = P_Pd_prime_given_Pd;
 epsilon = 10e-8;
 while 1
-    [row, ~] = size(Pd_prime_train);
     BN1.E_step
     BN1.M_step
     
@@ -42,8 +41,15 @@ display(P_Xh_prime_given_Pd_prime);
 display(P_Xt_prime_given_Pd_prime);
 
 %% Confusion matrix (Train)
-evidence = [Pd_train Xb_prime_train Xh_prime_train Xt_prime_train];
 Pd = Pd_train;
+Xb = Xb_train;
+Xh = Xh_train;
+Xt = Xt_train;
+Pd_prime = Pd_prime_train;
+Xb_prime = Xb_prime_train;
+Xh_prime = Xh_prime_train;
+Xt_prime = Xt_prime_train;
+
 BN1.compute_confusion_and_accuracy;
 
 display(' ');
