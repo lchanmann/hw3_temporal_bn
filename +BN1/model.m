@@ -32,28 +32,42 @@ classdef model
         function P = predict(obj, e)
             pd = e(4);
             if ~isnan(pd)
-                P = obj.p_pd_prime_given_pd( 1, pd );
-            else
                 p_e_given_pd_prime_is_1 = obj.p_e_given_pd_prime(e, 1);
                 p_e_given_pd_prime_is_0 = obj.p_e_given_pd_prime(e, 0);
-                
-                P = p_e_given_pd_prime_is_1 / (p_e_given_pd_prime_is_1 + p_e_given_pd_prime_is_0);
+            else
+                p_e_given_pd_prime_is_1 = obj.p_e_no_pd_given_pd_prime(e, 1);
+                p_e_given_pd_prime_is_0 = obj.p_e_no_pd_given_pd_prime(e, 0);
             end
+            P = p_e_given_pd_prime_is_1 / (p_e_given_pd_prime_is_1 + p_e_given_pd_prime_is_0);
         end
         
         %
         % p_e_given_pd_prime
         %
         function P = p_e_given_pd_prime(obj, e, pd_prime)
+            p_xb_given_pd = obj.p_x_given_pd(obj.P_Xb_prime_given_Pd_prime, e(1), e(4) );
+            p_xh_given_pd = obj.p_x_given_pd(obj.P_Xh_prime_given_Pd_prime, e(2), e(4) );
+            p_xt_given_pd = obj.p_x_given_pd(obj.P_Xt_prime_given_Pd_prime, e(3), e(4) );
+            
+            p_x_bht_prime_given_pd_prime_and_pd = obj.p_x_bht_given_pd_prime_and_pd(e(5:7), pd_prime, e(4));
+            
+            P = p_xb_given_pd * p_xh_given_pd * p_xt_given_pd * ...
+                p_x_bht_prime_given_pd_prime_and_pd;
+        end
+        
+        %
+        % p_e_no_pd_given_pd_prime
+        %
+        function P = p_e_no_pd_given_pd_prime(obj, e, pd_prime)
             p_xb_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xb_prime_given_Pd_prime, e(5), pd_prime );
             p_xh_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xh_prime_given_Pd_prime, e(6), pd_prime );
             p_xt_prime_given_pd_prime = obj.p_x_prime_given_pd_prime(obj.P_Xt_prime_given_Pd_prime, e(7), pd_prime );
             
-            p_xb_given_pd_is_1 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 1);
-            p_xb_given_pd_is_0 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 0);
+            p_x_bht_given_pd_is_1 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 1);
+            p_x_bht_given_pd_is_0 = obj.p_x_bht_given_pd_prime_and_pd(e(1:3), pd_prime, 0);
             
             P = p_xb_prime_given_pd_prime * p_xh_prime_given_pd_prime * p_xt_prime_given_pd_prime * ...
-                (p_xb_given_pd_is_1 + p_xb_given_pd_is_0);
+                (p_x_bht_given_pd_is_1 + p_x_bht_given_pd_is_0);
         end
         
         %
@@ -186,6 +200,13 @@ classdef model
             column = obj.index(x, 'HML'+0);
             
             P = cpt(row, column);
+        end
+        
+        %
+        % Look P(x_|pd)
+        %
+        function P = p_x_given_pd(obj, cpt, x, pd)
+            P = obj.p_x_prime_given_pd_prime(cpt, x, pd);
         end
         
         %
