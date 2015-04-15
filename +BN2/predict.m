@@ -1,6 +1,6 @@
 function Pd_prime = predict( pd, xa, xb, xt, xh, ...
     xa_prime, xb_prime, xt_prime, xh_prime, ...
-    CPT_Pd, CPT_Xb_given_Pd_and_Xa, CPT_Xh_given_Pd_and_Xa, CPT_Xt_given_Pd_and_Xa, ...
+    CPT_Pd, CPT_Xa, CPT_Xb_given_Pd_and_Xa, CPT_Xh_given_Pd_and_Xa, CPT_Xt_given_Pd_and_Xa, ...
     CPT_Pd_prime_given_Pd, CPT_Xa_prime_given_Pd_and_Xa )
 %PREDICT Summary of this function goes here
 %   inputs:
@@ -15,34 +15,75 @@ function Pd_prime = predict( pd, xa, xb, xt, xh, ...
 %           conditional probabilities for current time slice (not shared 
 %           with previous)
 %   outputs:
-%       predicted class
+%       probability of pd=true
     xa_domain = [1 2 3];
     xj_domain = ['H', 'M', 'L'];
     pd_domain = [1 0];
-    P_Pd=1;
-    P_Xa=1;
-    P_Xb_prime_given_Pd_Xa=lookup(CPT_Xb_given_Pd_and_Xa, Xb_prime, nan, Xa_prime);
-    P_Xh_prime_given_Pd_Xa=lookup(CPT_Xh_given_Pd_and_Xa, Xh_prime, nan, Xa_prime);
-    P_Xt_prime_given_Pd_Xa=lookup(CPT_Xt_given_Pd_and_Xa, Xt_prime, nan, Xa_prime);
-    P_Pd_prime_given_Pd=1;
-    P_Xa_prime_given_Pd_and_Xa=1;
-    jointP_Xa_prime=lookup(P_Xa_prime_given_Pd_and_Xa, pd, xa);%should yield a 3*1 matrix
+    P_Pd=lookup(CPT_Pd, pd, pd_domain);
+    P_Pd_prime_given_Pd=lookup(CPT_Pd_prime_given_Pd, nan, pd_domain, pd, pd_domain);
+    jointPd=sum(P_Pd_prime_given_Pd,2).*P_Pd; %should yield 2*1 matrix
+
+    P_Xa=lookup(CPT_Xa, xa_prime, xa_domain);
+    P_Xb_prime_given_Pd_Xa=lookup(CPT_Xb_given_Pd_and_Xa, xb_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xh_prime_given_Pd_Xa=lookup(CPT_Xh_given_Pd_and_Xa, xh_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xt_prime_given_Pd_Xa=lookup(CPT_Xt_given_Pd_and_Xa, xt_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xa_prime_given_Pd_Xa=lookup(CPT_Xa_prime_given_Pd_and_Xa, xa_prime, xa_domain, pd, pd_domain, xa, xa_domain);
+    jointP_Xa_prime=P_Xa_prime_given_Pd_Xa.*P_Xa;%should yield a 3*1 matrix
+
+    P_Xb_given_Pd_Xa=lookup(CPT_Xb_given_Pd_and_Xa, xb_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xh_given_Pd_Xa=lookup(CPT_Xh_given_Pd_and_Xa, xh_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xt_given_Pd_Xa=lookup(CPT_Xt_given_Pd_and_Xa, xt_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    jointP_Xa=P_Xa.*P_Xa;%should yield a 3*1 matrix
     
-    if ~isnan(Pd)
-        jointPd = lookup(P_Pd_prime_given_Pd, nan, pd)*lookup(P_Pd, pd); %2*1 matrix
-        %Catch case 2: is an Xj missing? Regardless of Xa
-        if ~isnan(Xb)
-            jointPd_rep = repmat(jointPd,1, length(jointP_Xa_prime));
-            jointP_Xb_prime = sum(sum(P_Xb_prime_given_Pd_Xa.*jointPd,1).*jointP_Xa_prime,2);
-            jointP_Xh_prime = sum(sum(P_Xh_prime_given_Pd_Xa.*jointPd,1).*jointP_Xa_prime,2);
-            jointP_Xt_prime = sum(sum(P_Xt_prime_given_Pd_Xa.*jointPd,1).*jointP_Xa_prime,2);
-        else
-            if ~isnan(Xa)
-        end
+    %if ~isnan(Pd)
+        jointPd_rep = repmat(jointPd,1, length(jointP_Xa_prime));
+        jointP_Xb_prime = sum(sum(P_Xb_prime_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa_prime,2);
+        jointP_Xh_prime = sum(sum(P_Xh_prime_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa_prime,2);
+        jointP_Xt_prime = sum(sum(P_Xt_prime_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa_prime,2);
+        Pd_prime=jointP_Xb_prime * jointP_Xh_prime * jointP_Xt_prime;
+    
+    if isnan(Pd)
+        jointPd_rep = repmat(jointPd,1, length(jointP_Xa));
+        jointP_Xb = sum(sum(P_Xb_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa,2);
+        jointP_Xh = sum(sum(P_Xh_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa,2);
+        jointP_Xt = sum(sum(P_Xt_given_Pd_Xa.*jointPd_rep,1).*jointP_Xa,2);
+        Pd_prime=Pd_prime*jointP_Xb*jointP_Xh*jointP_Xt;
     end
+    
+    
+    denom=1; %constructed from all lookups which returned a single value
+    if ~isnan(pd)
+        denom = denom*P_Pd;
+    end
+    if ~isnan(xa)
+        denom = denom*P_Xa;
+    end
+    if ~isnan(xb)
+        denom = denom*P_Xb_given_Pd_Xa;
+    end
+    if ~isnan(xt)
+        denom = denom*P_Xt_given_Pd_Xa;
+    end
+    if ~isnan(xh)
+        denom = denom*P_Xh_given_Pd_Xa;
+    end
+    if ~isnan(xa_prime)
+        denom = denom*P_Xa_prime_given_Pd_Xa;
+    end
+    if ~isnan(xb_prime)
+        denom = denom*P_Xb_prime_given_Pd_Xa;
+    end
+    if ~isnan(xt_prime)
+        denom = denom*P_Xt_prime_given_Pd_Xa;
+    end
+    if ~isnan(xh_prime)
+        denom = denom*P_Xh_prime_given_Pd_Xa;
+    end
+    
+    Pd_prime = Pd_prime / denom;
 end
 
-function P = lookup(cpt, x, pd, xa)
+function P = lookup(cpt, x, x_domain, pd, pd_domain, xa, xa_domain)
 %gives the value of the cell in a CPT for X=x, Pd=pd and Xa=xa. Assumes
 %default domains for these variables.If any one of the values is missing, 
 %Returns a vector with the probabilities for all three possible values. If
@@ -71,34 +112,37 @@ function P = lookup(cpt, x, pd, xa)
 %   a d*n matrix if pd and xa are missing
 %   a d*m matrix if pd and x are missing
 %   the full cpt table if all values are msising
+    if nargin<6
+        xa=nan;
+        xa_domain = 1;
+        if nargin<4
+            pd=nan;
+            pd_domain = 1;
+        end
+    end
+
 
     if ~isnan(x)
-        col = index(x, ['H', 'M', 'L']);
+        col = index(x, x_domain);
         if ~isnan(xa)
-            cols = (index(xa, [1 2 3])-1)*3 + col;
+            cols = (index(xa, xa_domain)-1)*length(x_domain) + col;
         else
-            cols = [col col+3 col+6];
+            cols = ([1:length(xa_domain)]-1)*length(x_domain)+col;
         end
     else
         if ~isnan(xa)
-            col = (index(xa, [1 2 3])-1)*3;
-            cols = [col:col+3];
+            col = (index(xa, xa_domain)-1)*length(x_domain);
+            cols = [col:col+length(x_domain)];
         else
-            cols = [1:9];
+            cols = [1:length(xa_domain)*length(x_domain)];
         end
     end
         
     if ~isnan(pd)
-        P = cpt(index(pd, [1 0]), cols);
+        P = cpt(index(pd, pd_domain), cols);
     else
         P = cpt(:, cols);
     end
-end
-
-function P = lookup_all_x(cpt, pd, xa)
-%Returns a vector with the probabilities for all three possible values
-    col = (index(xa, [1 2 3])-1)*3;
-    P = cpt( index(pd, [1 0]), [col:col+3]);
 end
 
 function ind = index(~, value, domain)
