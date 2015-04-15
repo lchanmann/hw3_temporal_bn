@@ -28,7 +28,7 @@ P_Xa = Pr(no_missing_Xa, [1 2 3]');
 P_Xb_given_Pd_and_Xa = BN2.CPT(no_missing_Xb, no_missing_Pd, no_missing_Xa, 'HML');
 P_Xh_given_Pd_and_Xa = BN2.CPT(no_missing_Xh, no_missing_Pd, no_missing_Xa, 'HML');
 P_Xt_given_Pd_and_Xa = BN2.CPT(no_missing_Xt, no_missing_Pd, no_missing_Xa, 'HML');
-P_Pd_prime_given_Pd_and_Xa = BN1.CPT(no_missing_Pd_prime, no_missing_Pd);
+P_Pd_prime_given_Pd = BN1.CPT(no_missing_Pd_prime, no_missing_Pd);
 P_Xa_prime_given_Pd_and_Xa = BN2.CPT(no_missing_Xa_prime, no_missing_Pd, no_missing_Xa, 1:3);
 
 display('--------------------- Parameters learned ---------------------');
@@ -37,7 +37,7 @@ display(P_Xa);
 display(P_Xb_given_Pd_and_Xa);
 display(P_Xh_given_Pd_and_Xa);
 display(P_Xt_given_Pd_and_Xa);
-display(P_Pd_prime_given_Pd_and_Xa);
+display(P_Pd_prime_given_Pd);
 display(P_Xa_prime_given_Pd_and_Xa);
 
 %% Confusion matrix (Train)
