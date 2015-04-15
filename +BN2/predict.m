@@ -30,9 +30,9 @@ function Pd_prime = predict( pd, xa, xb, xt, xh, ...
     P_Xa_prime_given_Pd_Xa=lookup(CPT_Xa_prime_given_Pd_and_Xa, xa_prime, xa_domain, pd, pd_domain, xa, xa_domain);
     jointP_Xa_prime=P_Xa_prime_given_Pd_Xa.*P_Xa;%should yield a 3*1 matrix
 
-    P_Xb_given_Pd_Xa=lookup(CPT_Xb_given_Pd_and_Xa, xb_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
-    P_Xh_given_Pd_Xa=lookup(CPT_Xh_given_Pd_and_Xa, xh_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
-    P_Xt_given_Pd_Xa=lookup(CPT_Xt_given_Pd_and_Xa, xt_prime, xj_domain, nan, pd_domain, xa_prime, xa_domain);
+    P_Xb_given_Pd_Xa=lookup(CPT_Xb_given_Pd_and_Xa, xb_prime, xj_domain, pd, pd_domain, xa_prime, xa_domain);
+    P_Xh_given_Pd_Xa=lookup(CPT_Xh_given_Pd_and_Xa, xh_prime, xj_domain, pd, pd_domain, xa_prime, xa_domain);
+    P_Xt_given_Pd_Xa=lookup(CPT_Xt_given_Pd_and_Xa, xt_prime, xj_domain, pd, pd_domain, xa_prime, xa_domain);
     jointP_Xa=P_Xa.*P_Xa;%should yield a 3*1 matrix
     
     %if ~isnan(Pd)
