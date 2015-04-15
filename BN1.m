@@ -28,7 +28,6 @@ while 1
     BN1.M_step
     
     distance = abs(sum(sum(P_Pd_prime_given_Pd - P_Pd_prime_given_Pd_temp))) / 4;
-    display(distance);
     if distance < epsilon
         break
     end
