@@ -25,7 +25,7 @@ no_missing_Xt = no_missing_Xt(1:end-1);
 
 P_Pd = Pr(no_missing_Pd, [1 0]');
 P_Xa = Pr(no_missing_Xa, [1 2 3]');
-P_Xa_given_Pd_and_Xa = BN2.CPT(no_missing_Xb, no_missing_Pd, no_missing_Xa, 'HML');
+P_Xb_given_Pd_and_Xa = BN2.CPT(no_missing_Xb, no_missing_Pd, no_missing_Xa, 'HML');
 P_Xh_given_Pd_and_Xa = BN2.CPT(no_missing_Xh, no_missing_Pd, no_missing_Xa, 'HML');
 P_Xt_given_Pd_and_Xa = BN2.CPT(no_missing_Xt, no_missing_Pd, no_missing_Xa, 'HML');
 P_Pd_prime_given_Pd_and_Xa = BN1.CPT(no_missing_Pd_prime, no_missing_Pd);
@@ -34,7 +34,7 @@ P_Xa_prime_given_Pd_and_Xa = BN2.CPT(no_missing_Xa_prime, no_missing_Pd, no_miss
 display('--------------------- Parameters learned ---------------------');
 display(P_Pd);
 display(P_Xa);
-display(P_Xa_given_Pd_and_Xa);
+display(P_Xb_given_Pd_and_Xa);
 display(P_Xh_given_Pd_and_Xa);
 display(P_Xt_given_Pd_and_Xa);
 display(P_Pd_prime_given_Pd_and_Xa);
